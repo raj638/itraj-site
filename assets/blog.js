@@ -31,7 +31,7 @@ if(art){
     var robots=document.querySelector('meta[name=robots]');if(robots)robots.remove();
     var can=document.querySelector('link[rel=canonical]');can.setAttribute('href',url);
     var ld=h('script',{type:'application/ld+json'});
-    ld.textContent=JSON.stringify({'@context':'https://schema.org','@type':'Article',headline:p.title,description:desc,datePublished:p.created_at,mainEntityOfPage:url,author:{'@type':'Person',name:'Raj Singh',url:'https://itraj.in/'},publisher:{'@type':'Person',name:'Raj Singh'},image:'https://itraj.in/assets/og.png'});
+    ld.textContent=JSON.stringify({'@context':'https://schema.org','@type':'Article',headline:p.title,description:desc,datePublished:p.created_at,mainEntityOfPage:url,author:{'@type':'Person',name:'Raj Singh',url:'https://itraj.in/'},publisher:{'@type':'Person',name:'Raj Singh'},image:'https://itraj.in/assets/og-v2.png'});
     document.head.appendChild(ld);
     art.textContent='';
     art.appendChild(h('p',null,h('a',{href:'/blog',class:'back',text:'← All articles'})));
