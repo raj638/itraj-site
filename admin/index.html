@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin | itraj.in</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 Inter,system-ui,sans-serif;background:#EEF0FF;color:#0F1235}
+button,input,select,textarea{font:inherit}a{color:#4F46E5}
+.bar{background:#312E81;color:#fff;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 24px}
+.bar b{font-size:18px}.bar span{font-size:14px;opacity:.85}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;padding:16px 24px 0;max-width:1000px;margin:0 auto}
+.tabs button{border:2px solid #D5D8F5;background:#fff;border-radius:999px;padding:10px 18px;font-weight:600;cursor:pointer;min-height:44px}
+.tabs button[aria-pressed=true]{background:#4F46E5;border-color:#4F46E5;color:#fff}
+main{max-width:1000px;margin:0 auto;padding:16px 24px 64px}
+.card{background:#fff;border:1px solid #D5D8F5;border-radius:16px;padding:20px;margin-top:16px}
+.card h2{margin:0 0 12px;font-size:20px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.item{border-top:1px solid #E6E8FA;padding:14px 0}.item:first-child{border-top:0}
+.meta{font-size:14px;color:#55587A}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;background:#4F46E5;color:#fff;min-height:44px}
+.btn.sec{background:#fff;color:#312E81;border:2px solid #D5D8F5}.btn.del{background:#fff;color:#B91C1C;border:2px solid #FCA5A5}
+label{display:block;font-size:14px;font-weight:600;margin-top:14px}
+input[type=text],input[type=url],input[type=email],input[type=password],input[type=number],textarea,select{width:100%;padding:12px;border:2px solid #D5D8F5;border-radius:10px;margin-top:6px;background:#fff}
+input[type=checkbox]{width:20px;height:20px;margin-right:8px;vertical-align:middle}
+.msg{margin-top:12px;font-weight:600}.ok{color:#047857}.err{color:#B91C1C}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:#D1FAE5;color:#064E3B}.pill.off{background:#FEE2E2;color:#7F1D1D}.pill.new{background:#FBBF24;color:#1F1300}
+.login{max-width:420px;margin:12vh auto;padding:0 20px}
+pre{white-space:pre-wrap;margin:6px 0 0;font:inherit}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const sb=createClient('https://wmmywitrqcitnbrrnouz.supabase.co','sb_publishable_hEyfdohetkQDym4y-wIgWA_VpW12syZ');
+const app=document.getElementById('app');
+function h(tag,attrs,...kids){const e=document.createElement(tag);for(const k in (attrs||{})){const v=attrs[k];if(k==='text')e.textContent=v;else if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(v===true)e.setAttribute(k,'');else if(v!==false&&v!=null)e.setAttribute(k,v)}kids.flat().forEach(c=>{if(c!=null&&c!==false)e.appendChild(typeof c==='string'?document.createTextNode(c):c)});return e}
+const COLL={
+ projects:{title:'Projects',order:['sort_order',true],label:r=>r.title,fields:[['title','Project name','text',1],['work_type','Type of work','text'],['result','Result (e.g. +33% conversion rate)','text'],['image_url','Screenshot','media'],['link_url','Link (optional, https://...)','url'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]},
+ reviews:{title:'Reviews',order:['sort_order',true],label:r=>r.author+': '+r.quote.slice(0,60),fields:[['quote','Review text','area',1],['author','Client name','text',1],['detail','Project / source (e.g. Shopify store build · Upwork, Aug 2026)','text'],['rating','Stars (1 to 5)','number'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]},
+ videos:{title:'Client videos',order:['sort_order',true],label:r=>r.title,fields:[['title','Video title','text',1],['client','Client name','text'],['video_url','Video: YouTube or Vimeo link, or upload an MP4 (max 50 MB)','media',1],['poster_url','Cover image (optional)','media'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]}
+};
+let tab='inquiries',session=null;
+
+function msg(el,text,ok){el.className='msg '+(ok?'ok':'err');el.textContent=text}
+
+function loginView(){
+  const m=h('div',{class:'msg',role:'status'});
+  const email=h('input',{type:'email',value:'raj638@gmail.com',autocomplete:'username',required:true});
+  const pw=h('input',{type:'password',autocomplete:'current-password',required:true});
+  const f=h('form',{class:'card',onsubmit:async e=>{e.preventDefault();msg(m,'Signing in...',true);
+    const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:pw.value});
+    if(error){msg(m,'Wrong email or password.',false);return}
+    await boot();}},
+    h('h2',{text:'Admin sign in'}),h('label',{text:'Email'},email),h('label',{text:'Password'},pw),
+    h('div',{style:'margin-top:16px'},h('button',{class:'btn',type:'submit',text:'Sign in'})),m);
+  app.replaceChildren(h('div',{class:'login'},h('h1',{text:'itraj.in admin'}),f));
+}
+
+async function shell(){
+  const {data:{user}}=await sb.auth.getUser();
+  const {count}=await sb.from('inquiries').select('id',{count:'exact',head:true}).eq('status','new');
+  const names=[['inquiries','Inquiries'+(count?' ('+count+' new)':'')],['projects','Projects'],['reviews','Reviews'],['videos','Videos'],['settings','Site info'],['account','Account']];
+  const body=h('main');
+  app.replaceChildren(
+    h('div',{class:'bar'},h('b',{text:'itraj.in admin'}),h('span',{text:user.email}),h('div',null,h('a',{href:'/',target:'_blank',style:'color:#fff;margin-right:16px',text:'View site'}),h('button',{class:'btn sec',text:'Sign out',onclick:async()=>{await sb.auth.signOut();loginView()}}))),
+    h('nav',{class:'tabs','aria-label':'Admin sections'},names.map(([k,t])=>h('button',{type:'button','aria-pressed':String(k===tab),text:t,onclick:()=>{tab=k;shell()}}))),
+    body);
+  if(tab==='inquiries')await inquiries(body);else if(tab==='settings')await settings(body);else if(tab==='account')account(body);else await collection(body,tab);
+}
+
+async function inquiries(body){
+  const {data,error}=await sb.from('inquiries').select('*').order('created_at',{ascending:false});
+  const c=h('div',{class:'card'},h('h2',{text:'Messages from the contact form'}));
+  if(error)c.append(h('p',{class:'err',text:'Could not load: '+error.message}));
+  else if(!data.length)c.append(h('p',{class:'meta',text:'No messages yet. New ones appear here.'}));
+  (data||[]).forEach(r=>{
+    const st=h('select',{'aria-label':'Status',onchange:async()=>{await sb.from('inquiries').update({status:st.value}).eq('id',r.id);shell()}},['new','replied','closed'].map(s=>h('option',{value:s,text:s,selected:s===r.status})));
+    c.append(h('div',{class:'item'},
+      h('div',{class:'row'},h('b',{text:r.name}),h('span',{class:'meta',text:new Date(r.created_at).toLocaleString()})),
+      h('div',{class:'meta'},h('a',{href:'mailto:'+r.email+'?subject='+encodeURIComponent('Re: your enquiry on itraj.in'),text:r.email}),' · '+(r.service||'No service chosen')),
+      h('pre',{text:r.message}),
+      h('div',{class:'row',style:'margin-top:10px;justify-content:flex-start'},st,h('button',{class:'btn del',text:'Delete',onclick:async()=>{if(confirm('Delete this message permanently?')){await sb.from('inquiries').delete().eq('id',r.id);shell()}}}))));
+  });
+  body.append(c);
+}
+
+async function upload(file,folder){
+  const clean=file.name.toLowerCase().replace(/[^a-z0-9.]+/g,'-');
+  const path=folder+'/'+Date.now()+'-'+clean;
+  const {error}=await sb.storage.from('site-media').upload(path,file,{cacheControl:'31536000'});
+  if(error)throw error;
+  return sb.storage.from('site-media').getPublicUrl(path).data.publicUrl;
+}
+
+async function collection(body,name){
+  const cfg=COLL[name];
+  const {data,error}=await sb.from(name).select('*').order(cfg.order[0],{ascending:cfg.order[1]});
+  const list=h('div',{class:'card'},h('h2',{text:cfg.title+' on the website'}));
+  if(error)list.append(h('p',{class:'err',text:error.message}));
+  else if(!data.length)list.append(h('p',{class:'meta',text:'Nothing here yet. Add the first one below.'}));
+  const inputs={},m=h('div',{class:'msg',role:'status'});let editing=null;
+  const form=h('form',{class:'card'});
+  const title=h('h2',{text:'Add new'});
+  form.append(title);
+  cfg.fields.forEach(([k,label,type,req])=>{
+    let el;
+    if(type==='area')el=h('textarea',{rows:'4',required:!!req});
+    else if(type==='bool')el=h('input',{type:'checkbox'});
+    else if(type==='number')el=h('input',{type:'number',step:'1'});
+    else el=h('input',{type:type==='url'?'url':'text',required:!!req});
+    inputs[k]=el;
+    if(type==='bool'){form.append(h('label',null,el,label))}
+    else{
+      const wrap=h('label',{text:label},el);
+      if(type==='media'){
+        const file=h('input',{type:'file',accept:'image/*,video/mp4,video/webm',style:'margin-top:8px'});
+        const note=h('span',{class:'meta',style:'display:block;margin-top:4px',text:'Or upload a file (it fills the box above).'});
+        file.addEventListener('change',async()=>{if(!file.files[0])return;note.textContent='Uploading...';try{el.value=await upload(file.files[0],name);note.textContent='Uploaded. Now press Save.'}catch(e){note.textContent='Upload failed: '+e.message}});
+        wrap.append(file,note);
+      }
+      form.append(wrap);
+    }
+  });
+  function reset(){editing=null;title.textContent='Add new';cfg.fields.forEach(([k,,t])=>{if(t==='bool')inputs[k].checked=true;else inputs[k].value=''});inputs.sort_order&&(inputs.sort_order.value=(data?data.length+1:1));inputs.rating&&(inputs.rating.value=5);msg(m,'',true)}
+  function edit(r){editing=r.id;title.textContent='Edit';cfg.fields.forEach(([k,,t])=>{if(t==='bool')inputs[k].checked=!!r[k];else inputs[k].value=r[k]==null?'':r[k]});window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})}
+  form.append(h('div',{style:'margin-top:16px;display:flex;gap:12px;flex-wrap:wrap'},h('button',{class:'btn',type:'submit',text:'Save'}),h('button',{class:'btn sec',type:'button',text:'Clear form',onclick:reset})),m);
+  form.addEventListener('submit',async e=>{e.preventDefault();
+    const p={};cfg.fields.forEach(([k,,t])=>{const el=inputs[k];if(t==='bool')p[k]=el.checked;else if(t==='number')p[k]=el.value===''?null:parseInt(el.value,10);else p[k]=el.value.trim()||null});
+    if(p.sort_order==null)p.sort_order=0;if('rating' in p&&!p.rating)p.rating=5;
+    if(p.link_url&&!/^https:\/\//.test(p.link_url)){msg(m,'Links must start with https://',false);return}
+    if(p.video_url&&!/^https:\/\//.test(p.video_url)){msg(m,'The video link must start with https://',false);return}
+    const q=editing?sb.from(name).update(p).eq('id',editing):sb.from(name).insert(p);
+    const {error}=await q;if(error){msg(m,'Could not save: '+error.message,false);return}
+    msg(m,'Saved. It is live on the website now.',true);setTimeout(shell,700)});
+  (data||[]).forEach(r=>list.append(h('div',{class:'item'},h('div',{class:'row'},h('div',null,h('b',{text:cfg.label(r)}),' ',h('span',{class:'pill'+(r.published?'':' off'),text:r.published?'Live':'Hidden'})),h('div',{style:'display:flex;gap:8px'},h('button',{class:'btn sec',type:'button',text:'Edit',onclick:()=>edit(r)}),h('button',{class:'btn del',type:'button',text:'Delete',onclick:async()=>{if(confirm('Delete this permanently?')){await sb.from(name).delete().eq('id',r.id);shell()}}}))))));
+  body.append(list,form);reset();
+}
+
+async function settings(body){
+  const {data,error}=await sb.from('settings').select('*').order('key');
+  const m=h('div',{class:'msg',role:'status'}),ins={};
+  const f=h('form',{class:'card'},h('h2',{text:'Numbers and links shown on the website'}));
+  if(error)f.append(h('p',{class:'err',text:error.message}));
+  (data||[]).forEach(r=>{ins[r.key]=h('input',{type:'text',value:r.value});f.append(h('label',{text:r.label||r.key},ins[r.key]))});
+  f.append(h('div',{style:'margin-top:16px'},h('button',{class:'btn',type:'submit',text:'Save'})),m);
+  f.addEventListener('submit',async e=>{e.preventDefault();
+    for(const k in ins){const {error}=await sb.from('settings').update({value:ins[k].value.trim()}).eq('key',k);if(error){msg(m,'Could not save: '+error.message,false);return}}
+    msg(m,'Saved. The website shows the new values on the next visit.',true)});
+  body.append(f);
+}
+
+function account(body){
+  const m=h('div',{class:'msg',role:'status'});
+  const pw=h('input',{type:'password',minlength:'10',autocomplete:'new-password',required:true});
+  body.append(h('form',{class:'card',onsubmit:async e=>{e.preventDefault();if(pw.value.length<10){msg(m,'Use at least 10 characters.',false);return}
+    const {error}=await sb.auth.updateUser({password:pw.value});if(error)msg(m,error.message,false);else{msg(m,'Password changed.',true);pw.value=''}}},
+    h('h2',{text:'Change password'}),h('label',{text:'New password (at least 10 characters)'},pw),h('div',{style:'margin-top:16px'},h('button',{class:'btn',type:'submit',text:'Change password'})),m));
+}
+
+async function boot(){
+  const {data:{session:s}}=await sb.auth.getSession();session=s;
+  if(!s){loginView();return}
+  const {data:ok}=await sb.rpc('is_admin');
+  if(!ok){await sb.auth.signOut();loginView();app.prepend(h('p',{class:'err',style:'text-align:center',text:'This account is not an admin.'}));return}
+  await shell();
+}
+boot();
+</script>
+</body>
+</html>
