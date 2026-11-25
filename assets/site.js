@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var SB='https://wmmywitrqcitnbrrnouz.supabase.co',KEY='sb_publishable_hEyfdohetkQDym4y-wIgWA_VpW12syZ';
+var SB='https://lvjkrdsxcuqjvrjmrljg.supabase.co',KEY='sb_publishable_-fYVCCRcyQRsXQs74TPzeQ_Uw_UDICt';
 var COLORS=['#4F46E5','#047857','#BE185D','#0E7490'];
 function $(s,r){return (r||document).querySelector(s)}
 function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}

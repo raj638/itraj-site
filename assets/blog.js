@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var SB='https://wmmywitrqcitnbrrnouz.supabase.co',KEY='sb_publishable_hEyfdohetkQDym4y-wIgWA_VpW12syZ';
+var SB='https://lvjkrdsxcuqjvrjmrljg.supabase.co',KEY='sb_publishable_-fYVCCRcyQRsXQs74TPzeQ_Uw_UDICt';
 function $(s){return document.querySelector(s)}
 function h(tag,attrs){var e=document.createElement(tag);if(attrs)for(var k in attrs){if(k==='text')e.textContent=attrs[k];else if(k==='class')e.className=attrs[k];else e.setAttribute(k,attrs[k])}for(var i=2;i<arguments.length;i++){if(arguments[i])e.appendChild(arguments[i])}return e}
 function safeUrl(u){return /^https:\/\//i.test(u||'')?u:''}
