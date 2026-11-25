@@ -95,4 +95,40 @@ if(form){
     .then(function(){btn.disabled=false;btn.textContent='Send inquiry →'});
   });
 }
+
+/* Lead pop-up: shown once, only after a few seconds, on exit intent (desktop) or deep scroll (mobile) */
+(function(){
+  var KEY2='itraj_pop_seen';
+  try{if(localStorage.getItem(KEY2))return}catch(e){}
+  var shown=false,ready=false,opener=null;
+  setTimeout(function(){ready=true},12000);
+  function show(){
+    if(shown||!ready)return;shown=true;
+    try{localStorage.setItem(KEY2,'1')}catch(e){}
+    opener=document.activeElement;
+    var bg=h('div',{class:'pop-bg'});
+    var box=h('div',{class:'pop',role:'dialog','aria-modal':'true','aria-labelledby':'pop-t'});
+    var close=h('button',{class:'x',type:'button','aria-label':'Close'});close.textContent='\u00d7';
+    var go=h('a',{class:'btn btn-primary',href:'#contact'});go.textContent='Get my free consultation \u2192';
+    var later=h('button',{class:'later',type:'button'});later.textContent='No thanks';
+    var t=h('h2',{id:'pop-t'});t.textContent='Want a second opinion on your store?';
+    var p=h('p');p.textContent='Book a free 30-minute consultation. Tell me your store link and your biggest problem, and I will reply within one working day with honest advice.';
+    box.appendChild(close);box.appendChild(t);box.appendChild(p);box.appendChild(go);box.appendChild(later);bg.appendChild(box);document.body.appendChild(bg);
+    if(window.gtag)gtag('event','popup_view');
+    function end(){bg.remove();document.removeEventListener('keydown',key);if(opener&&opener.focus)opener.focus()}
+    function key(e){if(e.key==='Escape')end();if(e.key==='Tab'){var f=[close,go,later],i=f.indexOf(document.activeElement);e.preventDefault();f[(i+(e.shiftKey?f.length-1:1))%f.length].focus()}}
+    document.addEventListener('keydown',key);
+    close.addEventListener('click',end);later.addEventListener('click',end);
+    bg.addEventListener('click',function(e){if(e.target===bg)end()});
+    go.addEventListener('click',function(){if(window.gtag)gtag('event','popup_click');end()});
+    close.focus();
+  }
+  document.addEventListener('mouseout',function(e){if(!e.relatedTarget&&e.clientY<=0)show()});
+  var lastY=0;
+  window.addEventListener('scroll',function(){
+    var y=window.scrollY,max=document.documentElement.scrollHeight-window.innerHeight;
+    if('ontouchstart' in window&&max>0&&y/max>0.7&&y<lastY)show();
+    lastY=y;
+  },{passive:true});
+})();
 })();

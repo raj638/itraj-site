@@ -42,6 +42,7 @@ function h(tag,attrs,...kids){const e=document.createElement(tag);for(const k in
 const COLL={
  projects:{title:'Projects',order:['sort_order',true],label:r=>r.title,fields:[['title','Project name','text',1],['work_type','Type of work','text'],['result','Result (e.g. +33% conversion rate)','text'],['image_url','Screenshot','media'],['link_url','Link (optional, https://...)','url'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]},
  reviews:{title:'Reviews',order:['sort_order',true],label:r=>r.author+': '+r.quote.slice(0,60),fields:[['quote','Review text','area',1],['author','Client name','text',1],['detail','Project / source (e.g. Shopify store build · Upwork, Aug 2026)','text'],['rating','Stars (1 to 5)','number'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]},
+ posts:{title:'Blog posts',order:['sort_order',true],label:r=>r.title,fields:[['title','Post title','text',1],['slug','Web address ending (lowercase letters, numbers and dashes only, e.g. my-first-post)','text',1],['excerpt','Short summary (shown in Google and on the blog list)','area'],['body','Article text. Blank line = new paragraph. Start a line with ## for a heading and - for a bullet.','area',1],['cover_url','Cover image (optional)','media'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]},
  videos:{title:'Client videos',order:['sort_order',true],label:r=>r.title,fields:[['title','Video title','text',1],['client','Client name','text'],['video_url','Video: YouTube or Vimeo link, or upload an MP4 (max 50 MB)','media',1],['poster_url','Cover image (optional)','media'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]}
 };
 let tab='inquiries',session=null;
@@ -64,7 +65,7 @@ function loginView(){
 async function shell(){
   const {data:{user}}=await sb.auth.getUser();
   const {count}=await sb.from('inquiries').select('id',{count:'exact',head:true}).eq('status','new');
-  const names=[['inquiries','Inquiries'+(count?' ('+count+' new)':'')],['projects','Projects'],['reviews','Reviews'],['videos','Videos'],['settings','Site info'],['account','Account']];
+  const names=[['inquiries','Inquiries'+(count?' ('+count+' new)':'')],['projects','Projects'],['reviews','Reviews'],['videos','Videos'],['posts','Blog'],['settings','Site info'],['account','Account']];
   const body=h('main');
   app.replaceChildren(
     h('div',{class:'bar'},h('b',{text:'itraj.in admin'}),h('span',{text:user.email}),h('div',null,h('a',{href:'/',target:'_blank',style:'color:#fff;margin-right:16px',text:'View site'}),h('button',{class:'btn sec',text:'Sign out',onclick:async()=>{await sb.auth.signOut();loginView()}}))),
