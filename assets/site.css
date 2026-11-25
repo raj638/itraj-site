@@ -55,15 +55,19 @@ h1 mark{background:var(--amber);color:#1F1300;padding:0 14px;border-radius:14px}
 .card{flex:1 1 280px;min-width:0;border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:12px}
 .card h3{font-family:var(--head);font-size:26px;font-weight:700}
 .card p{font-size:16px;line-height:1.6}
-.grid{display:flex;flex-wrap:wrap;gap:32px 24px;margin-top:48px}
-.proj{flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:16px}
-.shot{height:240px;border-radius:20px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
-.shot .win{width:78%;height:190px;background:#fff;border-radius:14px 14px 0 0;padding:16px;display:flex;flex-direction:column;gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:32px 24px;margin-top:48px}
+.proj{min-width:0;display:flex;flex-direction:column;gap:14px;color:inherit}
+a.proj .shot{transition:transform .2s,box-shadow .2s}
+a.proj:hover{opacity:1}
+a.proj:hover .shot,a.proj:focus-visible .shot{transform:translateY(-4px);box-shadow:0 14px 30px rgba(15,18,53,.18)}
+.shot{position:relative;aspect-ratio:1/1;border-radius:20px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;background:var(--lav)}
+.shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center}
+.shot .win{width:82%;height:72%;background:#fff;border-radius:14px 14px 0 0;padding:16px;display:flex;flex-direction:column;gap:10px}
 .shot .dots{display:flex;gap:6px}
 .shot .dots i{width:10px;height:10px;border-radius:50%;display:block}
-.shot .ph{flex:1;border-radius:8px;background:var(--lav);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;text-align:center;padding:8px}
-.shot img{width:100%;height:100%;object-fit:cover}
-.proj h3{font-family:var(--head);font-size:24px;font-weight:700}
+.shot .ph{flex:1;border-radius:8px;background:var(--lav);display:flex;align-items:center;justify-content:center;color:var(--ink);font:700 18px/1.3 var(--head);text-align:center;padding:12px}
+.shot .visit{position:absolute;right:12px;top:12px;background:#fff;color:var(--indigo-d);font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px}
+.proj h3{font-family:var(--head);font-size:21px;line-height:1.25;font-weight:700}
 .proj p{font-size:15px;color:var(--muted);margin-top:4px}
 .vids{display:flex;flex-wrap:wrap;gap:24px;margin-top:48px}
 .vid{flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:12px}

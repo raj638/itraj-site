@@ -40,25 +40,50 @@ const sb=createClient('https://wmmywitrqcitnbrrnouz.supabase.co','sb_publishable
 const app=document.getElementById('app');
 function h(tag,attrs,...kids){const e=document.createElement(tag);for(const k in (attrs||{})){const v=attrs[k];if(k==='text')e.textContent=v;else if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(v===true)e.setAttribute(k,'');else if(v!==false&&v!=null)e.setAttribute(k,v)}kids.flat().forEach(c=>{if(c!=null&&c!==false)e.appendChild(typeof c==='string'?document.createTextNode(c):c)});return e}
 const COLL={
- projects:{title:'Projects',order:['sort_order',true],label:r=>r.title,fields:[['title','Project name','text',1],['work_type','Type of work','text'],['result','Result (e.g. +33% conversion rate)','text'],['image_url','Screenshot','media'],['link_url','Link (optional, https://...)','url'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]},
+ projects:{title:'Projects',order:['sort_order',true],label:r=>r.title,fields:[['title','Project name','text',1],['work_type','Type of work','text'],['result','Result (e.g. +33% conversion rate)','text'],['image_url','Screenshot (square works best, 1200 x 1200 px)','media'],['link_url','Link (optional, https://...)','url'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]},
  reviews:{title:'Reviews',order:['sort_order',true],label:r=>r.author+': '+r.quote.slice(0,60),fields:[['quote','Review text','area',1],['author','Client name','text',1],['detail','Project / source (e.g. Shopify store build · Upwork, Aug 2026)','text'],['rating','Stars (1 to 5)','number'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]},
  posts:{title:'Blog posts',order:['sort_order',true],label:r=>r.title,fields:[['title','Post title','text',1],['slug','Web address ending (lowercase letters, numbers and dashes only, e.g. my-first-post)','text',1],['excerpt','Short summary (shown in Google and on the blog list)','area'],['body','Article text. Blank line = new paragraph. Start a line with ## for a heading and - for a bullet.','area',1],['cover_url','Cover image (optional)','media'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]},
  videos:{title:'Client videos',order:['sort_order',true],label:r=>r.title,fields:[['title','Video title','text',1],['client','Client name','text'],['video_url','Video: YouTube or Vimeo link, or upload an MP4 (max 50 MB)','media',1],['poster_url','Cover image (optional)','media'],['sort_order','Order (1 shows first)','number'],['published','Show on website','bool']]}
 };
-let tab='inquiries',session=null;
+let tab='inquiries',session=null,recovering=false;
 
 function msg(el,text,ok){el.className='msg '+(ok?'ok':'err');el.textContent=text}
 
-function loginView(){
+const ADMIN_URL=location.origin+'/admin';
+function loginView(note){
   const m=h('div',{class:'msg',role:'status'});
+  if(note)msg(m,note,false);
   const email=h('input',{type:'email',value:'raj638@gmail.com',autocomplete:'username',required:true});
   const pw=h('input',{type:'password',autocomplete:'current-password',required:true});
   const f=h('form',{class:'card',onsubmit:async e=>{e.preventDefault();msg(m,'Signing in...',true);
     const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:pw.value});
     if(error){msg(m,'Wrong email or password.',false);return}
     await boot();}},
-    h('h2',{text:'Admin sign in'}),h('label',{text:'Email'},email),h('label',{text:'Password'},pw),
-    h('div',{style:'margin-top:16px'},h('button',{class:'btn',type:'submit',text:'Sign in'})),m);
+    h('h2',{text:'Admin sign in'}),
+    h('button',{class:'btn sec',type:'button',style:'width:100%',text:'Continue with Google',onclick:async()=>{
+      const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:ADMIN_URL}});
+      if(error)msg(m,'Google sign-in is not switched on yet. Use your email and password for now.',false)}}),
+    h('p',{class:'meta',style:'text-align:center;margin:14px 0 0',text:'or use your email'}),
+    h('label',{text:'Email'},email),h('label',{text:'Password'},pw),
+    h('div',{style:'margin-top:16px'},h('button',{class:'btn',type:'submit',text:'Sign in'})),
+    h('p',{style:'margin:14px 0 0'},h('a',{href:'#',text:'Forgot password?',onclick:async e=>{e.preventDefault();
+      if(!email.value.trim()){msg(m,'Type your email first.',false);return}
+      msg(m,'Sending...',true);
+      const {error}=await sb.auth.resetPasswordForEmail(email.value.trim(),{redirectTo:ADMIN_URL});
+      if(error)msg(m,'Could not send: '+error.message,false);else msg(m,'If that email is an admin, a reset link is on its way. Check your inbox and spam.',true)}})),m);
+  app.replaceChildren(h('div',{class:'login'},h('h1',{text:'itraj.in admin'}),f));
+}
+
+function recoveryView(){
+  const m=h('div',{class:'msg',role:'status'});
+  const pw=h('input',{type:'password',minlength:'10',autocomplete:'new-password',required:true});
+  const f=h('form',{class:'card',onsubmit:async e=>{e.preventDefault();
+    if(pw.value.length<10){msg(m,'Use at least 10 characters.',false);return}
+    const {error}=await sb.auth.updateUser({password:pw.value});
+    if(error){msg(m,error.message,false);return}
+    history.replaceState(null,'',location.pathname);recovering=false;await boot();}},
+    h('h2',{text:'Set a new password'}),h('label',{text:'New password (at least 10 characters)'},pw),
+    h('div',{style:'margin-top:16px'},h('button',{class:'btn',type:'submit',text:'Save and sign in'})),m);
   app.replaceChildren(h('div',{class:'login'},h('h1',{text:'itraj.in admin'}),f));
 }
 
@@ -163,11 +188,13 @@ function account(body){
     h('h2',{text:'Change password'}),h('label',{text:'New password (at least 10 characters)'},pw),h('div',{style:'margin-top:16px'},h('button',{class:'btn',type:'submit',text:'Change password'})),m));
 }
 
+sb.auth.onAuthStateChange((ev)=>{if(ev==='PASSWORD_RECOVERY'){recovering=true;recoveryView()}});
 async function boot(){
+  if(recovering){recoveryView();return}
   const {data:{session:s}}=await sb.auth.getSession();session=s;
   if(!s){loginView();return}
   const {data:ok}=await sb.rpc('is_admin');
-  if(!ok){await sb.auth.signOut();loginView();app.prepend(h('p',{class:'err',style:'text-align:center',text:'This account is not an admin.'}));return}
+  if(!ok){await sb.auth.signOut();loginView('This Google or email account is not an admin.');return}
   await shell();
 }
 boot();
